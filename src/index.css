@@ -14,6 +14,13 @@
   --color-success: #16a34a;
   --color-danger: #dc2626;
   --color-warning: #d97706;
+  --color-pagination-bg: #e8eef7;
+  --color-pagination-text: #1e3a5f;
+  --color-pagination-border: #c5d4e8;
+  --color-pagination-active-bg: #1e3a5f;
+  --color-pagination-active-text: #ffffff;
+  --color-pagination-disabled-bg: #f1f5f9;
+  --color-pagination-disabled-text: #b0bec5;
 }
 
 [data-theme="dark"] {
@@ -29,6 +36,13 @@
   --color-success: #4ade80;
   --color-danger: #f87171;
   --color-warning: #fbbf24;
+  --color-pagination-bg: #1e293b;
+  --color-pagination-text: #94a3b8;
+  --color-pagination-border: rgba(255, 255, 255, 0.08);
+  --color-pagination-active-bg: #38bdf8;
+  --color-pagination-active-text: #0f172a;
+  --color-pagination-disabled-bg: #1e293b;
+  --color-pagination-disabled-text: #334155;
 }
 
 @theme {
@@ -43,4 +57,13 @@ input[type="password"]::-ms-clear {
 input[type="password"]::-webkit-credentials-auto-fill-button,
 input[type="password"]::-webkit-textfield-decoration-container {
   display: none !important;
+}
+
+input[type="search"]::-webkit-search-cancel-button {
+  display: none;
+  -webkit-appearance: none;
+}
+
+input[type="search"]::-webkit-search-decoration {
+  display: none;
 }

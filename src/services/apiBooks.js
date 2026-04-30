@@ -1,7 +1,19 @@
-export default async function getBooks() {
-  const randomPage = Math.floor(Math.random() * 100) + 1;
-  const res = await fetch(`/api/search.json?q=book&page=${randomPage}`);
+export default async function getBooks(query = "book", page = 1, limit = 8) {
+  const API_KEY = import.meta.env.VITE_GOOGLE_BOOKS_KEY;
+  const startIndex = (page - 1) * limit;
+
+  const res = await fetch(
+    `https://www.googleapis.com/books/v1/volumes?q=${query}&startIndex=${startIndex}&maxResults=${limit}&key=${API_KEY}`,
+  );
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch books: ${res.status}`);
+  }
+
   const data = await res.json();
 
-  return data?.docs;
+  return {
+    books: data?.items || [],
+    total: data?.totalItems || 0,
+  };
 }

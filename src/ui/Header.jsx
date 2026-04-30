@@ -6,12 +6,13 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../features/authentication/useUser";
 import { useLogout } from "../features/authentication/useLogout";
 
-function Header() {
+function Header({ setQuery }) {
   const navigate = useNavigate();
   const { isAuthenticated } = useUser();
   const { logout, isPending } = useLogout();
 
   const [searchWidth, setSearchWidth] = useState("w-[220px] sm:w-[260px]");
+  const [isArabic, setIsArabic] = useState(false);
 
   return (
     <header className="container mx-auto p-4 sm:flex-nowrap flex-wrap flex gap-y-3 justify-between items-center">
@@ -28,10 +29,21 @@ function Header() {
           type="search"
           className={`rounded-3xl px-4 py-2 ${searchWidth} bg-(--color-text-muted) outline-0 transition-all duration-300`}
           placeholder="Search Books"
+          onChange={(e) => {
+            const value = e.target.value;
+            setQuery(value);
+
+            const arabicRegex = /[\u0600-\u06FF]/;
+            setIsArabic(arabicRegex.test(value));
+          }}
           onFocus={() => setSearchWidth("w-[260px] sm:w-[300px] md:w-[340px]")}
           onBlur={() => setSearchWidth("w-[220px] sm:w-[260px] md:w-[300px]")}
         />
-        <IoMdSearch className="absolute top-1/2 -translate-y-1/2 right-2 text-gray-500 text-2xl" />
+        <IoMdSearch
+          className={`absolute top-1/2 -translate-y-1/2 text-gray-500 text-2xl ${
+            isArabic ? "left-2" : "right-2"
+          }`}
+        />
       </div>
       <div className="flex gap-3 md:gap-3.5 items-center">
         <div className="rounded-full bg-(--color-text-muted) p-2.5 md:p-3 text-xl cursor-pointer shadow-sm">

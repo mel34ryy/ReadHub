@@ -12,6 +12,7 @@ import PublicRoute from "./ui/PublicRoute";
 import CheckEmail from "./features/authentication/CheckEmail";
 import CheckEmailRoute from "./ui/CheckEmailRoute";
 import Books from "./pages/Books";
+import { useState } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,6 +23,7 @@ const queryClient = new QueryClient({
 });
 
 function App() {
+  const [query, setQuery] = useState("book");
   return (
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={false} />
@@ -30,12 +32,12 @@ function App() {
           <Route
             element={
               <ProtectedRoute>
-                <AppLayout />
+                <AppLayout setQuery={setQuery} />
               </ProtectedRoute>
             }
           >
             <Route index element={<Home />} />
-            <Route path="/books" element={<Books />} />
+            <Route path="/books" element={<Books query={query} />} />
           </Route>
           <Route
             path="/login"

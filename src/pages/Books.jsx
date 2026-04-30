@@ -5,31 +5,55 @@ import { useEffect, useState } from "react";
 import BookSkeleton from "../ui/BookSkeleton";
 import Book from "../ui/Book";
 
-function Books() {
+const MAX_RESULTS = 1000;
+
+function Books({ query }) {
   const [books, setBooks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const booksPerPage = 8;
+  const [totalPages, setTotalPages] = useState(0);
+  const booksPerPage = 12;
 
   useEffect(() => {
+    if (!query.trim()) return;
+
+    let ignore = false;
+
     async function loadBooks() {
       try {
         setIsLoading(true);
-        const data = await getBooks();
-        setBooks(data);
+
+        const { books, total } = await getBooks(
+          query,
+          currentPage,
+          booksPerPage,
+        );
+
+        if (ignore) return;
+
+        if (!books.length && currentPage > 1) {
+          setCurrentPage((prev) => prev - 1);
+          return;
+        }
+
+        setBooks(books);
+
+        const safeTotal = Math.min(total, MAX_RESULTS);
+        setTotalPages(Math.ceil(safeTotal / booksPerPage));
       } catch (err) {
         console.error(err);
+        setBooks([]);
       } finally {
-        setIsLoading(false);
+        if (!ignore) setIsLoading(false);
       }
     }
 
     loadBooks();
-  }, []);
 
-  const startIndex = (currentPage - 1) * booksPerPage;
-  const currentBooks = books.slice(startIndex, startIndex + booksPerPage);
-  const totalPages = Math.ceil(books.length / booksPerPage);
+    return () => {
+      ignore = true;
+    };
+  }, [currentPage, query]);
 
   return (
     <div className="container mx-auto">
@@ -61,18 +85,20 @@ function Books() {
             ? Array.from({ length: 4 }).map((_, index) => (
                 <BookSkeleton key={index} />
               ))
-            : currentBooks.map((book, i) => (
-                <Book
-                  key={i}
-                  title={book.title}
-                  cover={
-                    book.cover_i
-                      ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`
-                      : `https://placehold.co/150/dddddd/dddddd`
-                  }
-                  author={book.author_name?.[0] || "Unknown Author"}
-                />
-              ))}
+            : books.map((book, i) => {
+                const info = book.volumeInfo;
+                return (
+                  <Book
+                    key={book.id || i}
+                    title={info?.title || "No Title"}
+                    cover={
+                      info?.imageLinks?.thumbnail ||
+                      "https://placehold.co/150/dddddd/dddddd"
+                    }
+                    author={info?.authors?.[0] || "Unknown Author"}
+                  />
+                );
+              })}
         </div>
         <div className="flex justify-center my-4">
           <div>
@@ -80,12 +106,12 @@ function Books() {
               <li>
                 <button
                   disabled={currentPage === 1}
-                  className={`px-3 py-1.5 rounded-md border text-(--color-text)
-          ${
-            currentPage === 1
-              ? "bg-(--color-text-gray) border-(--color-text-gray) opacity-70 cursor-not-allowed"
-              : "bg-(--color-primary) border-(--color-primary) hover:bg-(--color-accent) hover:border-(--color-accent)"
-          } ${currentPage === 1 ? "cursor-none" : "cursor-pointer"}`}
+                  className={`px-3 py-1.5 rounded-md border text-sm font-medium transition-all duration-200
+            ${
+              currentPage === 1
+                ? "bg-(--color-pagination-disabled-bg) border-(--color-pagination-border) text-(--color-pagination-disabled-text) opacity-60 cursor-not-allowed"
+                : "bg-(--color-pagination-bg) border-(--color-pagination-border) text-(--color-pagination-text) hover:bg-(--color-pagination-active-bg) hover:text-(--color-pagination-active-text) hover:border-(--color-pagination-active-bg) cursor-pointer"
+            }`}
                   onClick={() =>
                     setCurrentPage((prev) => Math.max(prev - 1, 1))
                   }
@@ -97,31 +123,58 @@ function Books() {
               {Array.from({ length: totalPages }, (_, i) => {
                 const page = i + 1;
                 const isActive = currentPage === page;
-                return (
-                  <li
-                    onClick={() => setCurrentPage(i + 1)}
-                    key={i + 1}
-                    className={`px-3 py-1.5 rounded-md border text-(--color-text)
-            ${
-              isActive
-                ? "bg-(--color-accent) border-(--color-accent)"
-                : "bg-(--color-primary) border-(--color-primary) hover:bg-(--color-accent) hover:border-(--color-accent)"
-            }`}
-                  >
-                    <button>{i + 1}</button>
-                  </li>
-                );
+
+                if (
+                  page === 1 ||
+                  page === totalPages ||
+                  (page >= currentPage - 2 && page <= currentPage + 2)
+                ) {
+                  return (
+                    <li
+                      onClick={() => {
+                        if (page <= totalPages) setCurrentPage(page);
+                      }}
+                      key={page}
+                      className={`px-3 py-1.5 rounded-md border text-sm font-medium transition-all duration-200 cursor-pointer
+          ${
+            isActive
+              ? "bg-(--color-pagination-active-bg) border-(--color-pagination-active-bg) text-(--color-pagination-active-text)"
+              : "bg-(--color-pagination-bg) border-(--color-pagination-border) text-(--color-pagination-text) hover:bg-(--color-pagination-active-bg) hover:text-(--color-pagination-active-text) hover:border-(--color-pagination-active-bg)"
+          }`}
+                    >
+                      <button
+                        disabled={isLoading || isActive}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </button>
+                    </li>
+                  );
+                }
+
+                if (page === currentPage - 3 || page === currentPage + 3) {
+                  return (
+                    <li
+                      key={page}
+                      className="px-2 py-1.5 text-(--color-text-gray) text-sm"
+                    >
+                      ...
+                    </li>
+                  );
+                }
+
+                return null;
               })}
 
               <li>
                 <button
-                  disabled={currentPage === totalPages}
-                  className={`px-3 py-1.5 rounded-md border text-(--color-surface)
-          ${
-            currentPage === totalPages
-              ? "bg-(--color-text-gray) border[var(--color-text-gray) opacity-70 cursor-not-allowed"
-              : "bg-(--color-primary) border-(--color-primary) hover:bg-(--color-accent) hover:border-(--color-accent)"
-          } ${currentPage === totalPages ? "cursor-none" : "cursor-pointer"}`}
+                  disabled={isLoading || currentPage === totalPages}
+                  className={`px-3 py-1.5 rounded-md border text-sm font-medium transition-all duration-200
+            ${
+              currentPage === totalPages
+                ? "bg-(--color-pagination-disabled-bg) border-(--color-pagination-border) text-(--color-pagination-disabled-text) opacity-60 cursor-not-allowed"
+                : "bg-(--color-pagination-bg) border-(--color-pagination-border) text-(--color-pagination-text) hover:bg-(--color-pagination-active-bg) hover:text-(--color-pagination-active-text) hover:border-(--color-pagination-active-bg) cursor-pointer"
+            }`}
                   onClick={() =>
                     setCurrentPage((prev) => Math.min(prev + 1, totalPages))
                   }
