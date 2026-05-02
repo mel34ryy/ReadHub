@@ -96,6 +96,14 @@ function Books({ query }) {
                       "https://placehold.co/150/dddddd/dddddd"
                     }
                     author={info?.authors?.[0] || "Unknown Author"}
+                    previewLink={book.accessInfo?.webReaderLink}
+                    pdfLink={book.accessInfo?.pdf?.downloadLink}
+                    isPdfAvailable={book.accessInfo?.pdf?.isAvailable}
+                    infoLink={info?.infoLink}
+                    saleability={book.saleInfo?.saleability}
+                    price={book.saleInfo?.listPrice?.amount}
+                    currency={book.saleInfo?.listPrice?.currencyCode}
+                    buyLink={book.saleInfo?.buyLink}
                   />
                 );
               })}
