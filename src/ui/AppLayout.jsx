@@ -4,11 +4,13 @@ import Header from "./Header";
 
 function AppLayout({ setQuery }) {
   return (
-    <div className="bg-(--color-bg)">
+    <div className="min-h-screen flex flex-col bg-(--color-bg)">
       <Header setQuery={setQuery} />
-      <main>
+
+      <main className="flex-1">
         <Outlet />
       </main>
+
       <Footer />
     </div>
   );

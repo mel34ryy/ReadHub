@@ -5,6 +5,7 @@ import { useState } from "react";
 import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import Spinner from "../../ui/Spinner";
 import signupImg from "../../assets/library.jpg";
+import { Link } from "react-router-dom";
 
 function Signup() {
   const [show1, setShow1] = useState(false);
@@ -39,9 +40,18 @@ function Signup() {
         <h2 className="text-(--color-text) text-[24px] font-bold mb-2">
           Register a new account
         </h2>
+        <p className="text-[14px] text-(--color-primary)">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-(--color-accent) transition-all duration-300 hover:text-(--color-accent-hover)"
+          >
+            Login
+          </Link>
+        </p>
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="py-2 flex flex-col gap-1"
+          className="py-8 flex flex-col gap-1"
         >
           <div className="flex gap-4 mb-2">
             <div className="w-[50%]">

@@ -2,12 +2,14 @@ import { useState } from "react";
 import { BsBookmarkHeart } from "react-icons/bs";
 import { HiOutlineShoppingBag } from "react-icons/hi2";
 import { IoMdSearch } from "react-icons/io";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "../features/authentication/useUser";
 import { useLogout } from "../features/authentication/useLogout";
 
 function Header({ setQuery }) {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const { isAuthenticated } = useUser();
   const { logout, isPending } = useLogout();
 
@@ -31,6 +33,9 @@ function Header({ setQuery }) {
           placeholder="Search Books"
           onChange={(e) => {
             const value = e.target.value;
+            if (value.length > 1 && location.pathname !== "/books") {
+              navigate("/books");
+            }
             setQuery(value);
 
             const arabicRegex = /[\u0600-\u06FF]/;
@@ -47,7 +52,7 @@ function Header({ setQuery }) {
       </div>
       <div className="flex gap-3 md:gap-3.5 items-center">
         <div className="rounded-full bg-(--color-text-muted) p-2.5 md:p-3 text-xl cursor-pointer shadow-sm">
-          <BsBookmarkHeart />
+          <BsBookmarkHeart onClick={() => navigate("/wish-list")} />
         </div>
         <div className="rounded-full bg-(--color-text-muted) p-2.5 md:p-3 text-xl cursor-pointer shadow-sm">
           <HiOutlineShoppingBag />

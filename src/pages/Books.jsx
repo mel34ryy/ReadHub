@@ -5,13 +5,14 @@ import { useEffect, useState } from "react";
 import BookSkeleton from "../ui/BookSkeleton";
 import Book from "../ui/Book";
 
-const MAX_RESULTS = 1000;
+const MAX_RESULTS = 250;
 
-function Books({ query }) {
+function Books({ query, wishList, addToWishlist }) {
   const [books, setBooks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [filter, setFilter] = useState("ebooks");
   const booksPerPage = 12;
 
   useEffect(() => {
@@ -27,14 +28,10 @@ function Books({ query }) {
           query,
           currentPage,
           booksPerPage,
+          filter,
         );
 
         if (ignore) return;
-
-        if (!books.length && currentPage > 1) {
-          setCurrentPage((prev) => prev - 1);
-          return;
-        }
 
         setBooks(books);
 
@@ -42,7 +39,6 @@ function Books({ query }) {
         setTotalPages(Math.ceil(safeTotal / booksPerPage));
       } catch (err) {
         console.error(err);
-        setBooks([]);
       } finally {
         if (!ignore) setIsLoading(false);
       }
@@ -53,7 +49,7 @@ function Books({ query }) {
     return () => {
       ignore = true;
     };
-  }, [currentPage, query]);
+  }, [currentPage, query, filter]);
 
   return (
     <div className="container mx-auto">
@@ -65,22 +61,25 @@ function Books({ query }) {
         />
       </div>
       <section>
-        <div className="flex justify-between my-7">
+        <div className="flex justify-between mt-7">
           <h3>Books for you!</h3>
           <div className="flex items-center gap-4">
-            <select name="types" id="types">
-              <option value="test1">Test1</option>
-              <option value="test2">Test2</option>
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="py-1.5 px-3"
+              name="types"
+              id="types"
+            >
+              <option value="ebooks">Ebooks</option>
+              <option value="partial">Partial</option>
+              <option value="full">Full</option>
+              <option value="free-ebooks">Free ebooks</option>
+              <option value="paid-ebooks">Paid ebooks</option>
             </select>
-            <button className="flex items-center justify-center gap-2">
-              <span>
-                <IoFilter />
-              </span>
-              Filter
-            </button>
           </div>
         </div>
-        <div className="mt-20 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
+        <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12">
           {isLoading
             ? Array.from({ length: 4 }).map((_, index) => (
                 <BookSkeleton key={index} />
@@ -90,6 +89,7 @@ function Books({ query }) {
                 return (
                   <Book
                     key={book.id || i}
+                    id={book.id}
                     title={info?.title || "No Title"}
                     cover={
                       info?.imageLinks?.thumbnail ||
@@ -104,6 +104,8 @@ function Books({ query }) {
                     price={book.saleInfo?.listPrice?.amount}
                     currency={book.saleInfo?.listPrice?.currencyCode}
                     buyLink={book.saleInfo?.buyLink}
+                    wishList={wishList}
+                    addToWishlist={addToWishlist}
                   />
                 );
               })}

@@ -12,7 +12,8 @@ import PublicRoute from "./ui/PublicRoute";
 import CheckEmail from "./features/authentication/CheckEmail";
 import CheckEmailRoute from "./ui/CheckEmailRoute";
 import Books from "./pages/Books";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import WishList from "./pages/WishList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,6 +25,15 @@ const queryClient = new QueryClient({
 
 function App() {
   const [query, setQuery] = useState("book");
+  const [wishList, setWishList] = useState(() => {
+    const stored = localStorage.getItem("wishlist");
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("wishlist", JSON.stringify(wishList));
+  }, [wishList]);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools initialIsOpen={false} />
@@ -37,7 +47,33 @@ function App() {
             }
           >
             <Route index element={<Home />} />
-            <Route path="/books" element={<Books query={query} />} />
+            <Route
+              path="/books"
+              element={
+                <Books
+                  query={query}
+                  wishList={wishList}
+                  addToWishlist={(book) =>
+                    setWishList((prev) => {
+                      if (prev.some((item) => item.title === book.title))
+                        return prev;
+                      return [...prev, book];
+                    })
+                  }
+                />
+              }
+            />
+            <Route
+              path="/wish-list"
+              element={
+                <WishList
+                  wishList={wishList}
+                  removeFromWishlist={(id) =>
+                    setWishList((prev) => prev.filter((book) => book.id !== id))
+                  }
+                />
+              }
+            />
           </Route>
           <Route
             path="/login"

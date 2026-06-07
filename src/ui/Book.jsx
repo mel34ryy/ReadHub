@@ -14,7 +14,12 @@ function Book({
   price,
   currency,
   buyLink,
+  wishList,
+  addToWishlist,
+  id,
 }) {
+  const isInWishlist = wishList.some((wish) => wish.title === title);
+
   return (
     <div className="rounded-xl bg-(--color-bg) p-4 shadow flex flex-col h-full">
       <div className="relative h-64 mb-4 overflow-hidden rounded-md shrink-0 group">
@@ -61,8 +66,27 @@ function Book({
         {author}
       </p>
       <div className="mt-auto flex flex-col gap-3">
-        <button className="px-3 py-1 rounded-md bg-(--color-primary) text-(--color-surface) cursor-pointer hover:opacity-90 transition">
-          Add to Wishlist
+        <button
+          disabled={isInWishlist}
+          onClick={() => {
+            addToWishlist({
+              id,
+              title,
+              cover,
+              author,
+              previewLink,
+              pdfLink,
+              isPdfAvailable,
+              infoLink,
+              saleability,
+              price,
+              currency,
+              buyLink,
+            });
+          }}
+          className={`${isInWishlist ? "cursor-not-allowed bg-gray-600" : "bg-(--color-primary) cursor-pointer hover:opacity-90"} px-3 py-1 rounded-md text-(--color-surface) transition`}
+        >
+          {isInWishlist ? "Added ✓" : "Add to Wishlist"}
         </button>
         <div className="flex items-center justify-between gap-2">
           {saleability === "FOR_SALE" && price && (
